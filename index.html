@@ -368,7 +368,7 @@ Other elements were made 100% by me such as the following:
         </div>
 
         <div class="panel active" id="panel-upgrades">
-            <div class="shopGrid" id="upgradesList"></div>
+            <div class="shopGrid" id="upgradesList"></div>            
         </div>
         <div class="panel" id="panel-chemists">
             <div class="shopGrid" id="chemistsList"></div>
@@ -618,7 +618,7 @@ Other elements were made 100% by me such as the following:
                     <span class="itemDesc">${u.desc}</span>
                 </div>
                 <div class="itemRight">
-                    <span class="itemCost">${fmt(prestigeCost())} AP</span>
+                    <span class="itemCost">${fmt(u.cost)} AP</span>
                 </div>`;
             div.addEventListener("click", () => buyUpgrade(u));
             list.appendChild(div);
