@@ -1,0 +1,816 @@
+<!-- 
+==========================
+----PLEASE READ ALL THIS BEFORE GIVING YOUR OPINION-----
+============================
+
+
+
+Element Clicker
+This game was made by Landon Lego 
+done in about 1.5-2 hours
+
+Some elements were made with AI such as the following: 
+    - All element data, chemist data, and upgrade data
+    - Basic beginning css layout
+    - Saving the game
+    - Clicking
+
+Other elements were made 100% by me such as the following:
+    - Dev menu
+    - The entirety of the creativity and ideas
+    - The HUD menu
+    - All colors, font, and style, and glow
+    - Prestige logic
+    - Progression
+
+___EXPERIENCE______________________
+
+Here is my github: https://github.com/legolandon7
+Here is my scratch account: https://scratch.mit.edu/users/C-C_LandonLego/ ( heres where i made most of my things )
+
+Here are my socials: https://llegonetwork.dev/socials ( kinda useless but still )
+
+I used ai to rush, here is some other projects of mine with virtually 0 AI but took me a week or 2 to make:
+    - https://llegonetwork.dev
+    - https://teenarazzi.com (my fav discord server btw i made site for)
+
+    - if given enough time I can create websites like this ( I need to actually remake teenarazzi ) with no ai and better than usual
+
+Heres some math related things ive made:
+    - https://legolandon7.github.io/DDARaycasterJS/
+
+I mainly coded discord bots before and am best at backend things that aren't visual
+For example that raycaster I made, or backend sql server-side things, or even the backend discord-login logic for my website
+If you need me to explain anything or prove myself a different way too let me know
+
+I work best with backend, reactjs, and math-related things
+
+___BAD THINGS____________________
+
+This game doesnt work well on mobile
+I used AI
+It looks very basic and bad
+Progression isnt the best
+
+- sorry for making this whole rant comment its just my kinda coding experience and what this project is and stuffs.
+  is not the best but issok
+-->
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Element Clicker</title>
+    <!-- Tech Font is so sigma-->
+    <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Exo+2:wght@300;500;700&display=swap" rel="stylesheet">
+    <style>
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+        /*:root {
+            --glow:    #00e5ff;
+            --glow2:   #7b2fff;
+            --accent:  #ff6b35;
+            --bg:      #080c14;
+            --surface: rgba(255,255,255,0.04);
+            --border:  rgba(0,229,255,0.2);
+            --text:    #e8f4ff;
+            --muted:   #6a8aaa;
+        }*/ /* I didnt like these colors its up to u */
+
+        :root {
+            --glow: #00eeff;
+            --glow2: #5555ee;
+            --accent: #c7a6ff;
+            --bg: #000030;
+            --surface: rgba(200, 200, 200, 0.1);
+            --border: rgba(0, 255, 255, 0.2);
+            --text: #e8f4ff;
+            --muted: #eee;
+        }
+
+        body {
+            background: var(--bg);
+            font-family: 'Exo 2', sans-serif; /* so sigma font*/
+            color: var(--text);
+            height: 100vh;
+            overflow: hidden;
+            display: grid;
+            grid-template-rows: auto 1fr;
+        }
+
+        #hud {
+            display: flex;
+            align-items: center;
+            gap: 2rem;
+            padding: 0.85rem 2rem;
+            border-bottom: 1px solid var(--border);
+            background: rgba(0,229,255,0.03);
+        }
+
+        #hud h1 {
+            font-size: clamp(13px, 1.8vw, 17px);
+            font-weight: 500;
+            letter-spacing: 0.2em;
+            text-transform: uppercase;
+            color: var(--glow);
+            text-shadow: 0 0 12px var(--glow);
+            margin-right: 0.5rem;
+        }
+
+        .hudStat { display: flex; flex-direction: column; gap: 2px; }
+        .hudStat label { font-size: 10px; color: var(--muted); letter-spacing: 0.15em; text-transform: uppercase; }
+        .hudStat span  { font-family: 'Share Tech Mono', monospace; font-size: clamp(15px, 1.8vw, 20px); }
+
+        #prestigeBtn {
+            margin-left: auto;
+            padding: 0.5rem 1.2rem;
+            background: none;
+            border: 1px solid var(--accent);
+            border-radius: 5px;
+            color: var(--accent);
+            font-family: 'Exo 2', sans-serif;
+            font-size: 12px;
+            letter-spacing: 0.15em;
+            text-transform: uppercase;
+            cursor: pointer;
+            opacity: 0.3;
+            pointer-events: none;
+            transition: opacity 0.2s, box-shadow 0.2s;
+        }
+
+        #prestigeBtn.ready {
+            opacity: 1;
+            pointer-events: all;
+            box-shadow: 0 0 16px rgba(255,107,53,0.4);
+        }
+
+        #prestigeBtn.ready:hover { box-shadow: 0 0 28px rgba(221, 0, 255, 0.7); }
+
+        #layout {
+            display: grid;
+            grid-template-columns: 300px 1fr;
+            overflow: hidden;
+        }
+
+        #left {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 1.5rem;
+            padding: 1.5rem;
+            border-right: 1px solid var(--border);
+        }
+
+        #elementSelector {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+            justify-content: center;
+        }
+
+        .elBtn {
+            padding: 4px 10px;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 4px;
+            color: var(--muted);
+            font-family: 'Share Tech Mono', monospace;
+            font-size: 13px;
+            cursor: pointer;
+            transition: border-color 0.15s, color 0.15s;
+        }
+
+        .elBtn:hover { border-color: var(--glow); color: var(--text); }
+
+        .elBtn.active {
+            border-color: var(--glow);
+            color: var(--glow);
+            box-shadow: 0 0 8px rgba(0,229,255,0.3);
+        }
+
+        #elementTile {
+            position: relative;
+            width: clamp(150px, 20vw, 210px);
+            aspect-ratio: 1;
+            border: 2px solid var(--glow);
+            border-radius: 8px;
+            background: var(--surface);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 4px;
+            cursor: pointer;
+            user-select: none;
+            box-shadow: 0 0 24px rgba(0,229,255,0.25), inset 0 0 24px rgba(0,229,255,0.05);
+            transition: box-shadow 0.15s, transform 0.1s;
+        }
+
+        #elementTile:hover { box-shadow: 0 0 40px rgba(0,229,255,0.5), inset 0 0 32px rgba(0,229,255,0.1); }
+        #elementTile:active { transform: scale(0.96); }
+
+        #tileNumber   { position: absolute; top: 10px; left: 12px; font-family: 'Share Tech Mono', monospace; font-size: 13px; color: var(--glow); }
+        #tileMass     { position: absolute; top: 10px; right: 12px; font-family: 'Share Tech Mono', monospace; font-size: 11px; color: var(--muted); }
+        #tileSymbol   { font-size: clamp(44px, 6.5vw, 68px); font-weight: 700; text-shadow: 0 0 20px var(--glow); line-height: 1; }
+        #tileName     { font-size: clamp(10px, 1.2vw, 13px); color: var(--muted); letter-spacing: 0.1em; text-transform: uppercase; }
+        #tileCategory { position: absolute; bottom: 10px; font-size: 10px; color: var(--glow2); letter-spacing: 0.1em; text-transform: uppercase; }
+
+        #tileMulti {
+            position: absolute;
+            bottom: 28px;
+            font-family: 'Share Tech Mono', monospace;
+            font-size: 11px;
+            color: var(--accent);
+        }
+
+        #clickLabel { font-size: 11px; color: var(--muted); letter-spacing: 0.15em; text-transform: uppercase; }
+
+        #right {
+            display: grid;
+            grid-template-rows: auto 1fr;
+            overflow: hidden;
+        }
+
+        #tabs { display: flex; border-bottom: 1px solid var(--border); }
+
+        .tabBtn {
+            flex: 1;
+            padding: 0.8rem 0.5rem;
+            background: none;
+            border: none;
+            border-bottom: 2px solid transparent;
+            color: var(--muted);
+            font-family: 'Exo 2', sans-serif;
+            font-size: 10px;
+            letter-spacing: 0.2em;
+            text-transform: uppercase;
+            cursor: pointer;
+            transition: color 0.2s, border-color 0.2s;
+            margin-bottom: -1px;
+        }
+
+        .tabBtn:hover { color: var(--text); }
+        .tabBtn.active { color: var(--glow); border-bottom-color: var(--glow); }
+
+        .panel { display: none; padding: 1.25rem 1.75rem; overflow-y: auto; height: 100%; }
+        .panel.active { display: block; }
+
+        .shopGrid { display: flex; flex-direction: column; gap: 7px; }
+
+        .shopItem {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0.7rem 1rem;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            cursor: pointer;
+            transition: border-color 0.2s, background 0.2s;
+        }
+
+        .shopItem:hover { border-color: var(--glow); background: rgba(0,229,255,0.07); }
+
+        .shopItem.locked {
+            opacity: 0.3;
+            cursor: not-allowed;
+            pointer-events: none;
+        }
+
+        .shopItem.owned { border-color: rgba(123,47,255,0.4); }
+
+        .itemInfo { display: flex; flex-direction: column; gap: 2px; }
+        .itemName  { font-size: clamp(12px, 1.3vw, 14px); font-weight: 500; }
+        .itemDesc  { font-size: 11px; color: var(--muted); }
+
+        .itemRight  { display: flex; flex-direction: column; align-items: flex-end; gap: 2px; }
+        .itemCost   { font-family: 'Share Tech Mono', monospace; font-size: 12px; color: var(--glow); }
+        .itemOwned  { font-size: 10px; color: var(--muted); }
+
+        .sectionLabel {
+            font-size: 10px;
+            color: var(--muted);
+            letter-spacing: 0.2em;
+            text-transform: uppercase;
+            padding: 0.5rem 0 0.4rem;
+            border-bottom: 1px solid var(--border);
+            margin-bottom: 6px;
+        }
+
+        #prestigePanel { display: flex; flex-direction: column; gap: 1.2rem; }
+
+        .prestigeStat {
+            padding: 1rem 1.25rem;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+        }
+
+        .prestigeStat p { font-size: 12px; color: var(--muted); margin-top: 4px; line-height: 1.5; }
+
+        .prestigeStat strong {
+            font-family: 'Share Tech Mono', monospace;
+            font-size: 18px;
+            color: var(--accent);
+        }
+
+        #bigPrestigeBtn {
+            padding: 1rem;
+            background: rgba(255,107,53,0.08);
+            border: 1px solid var(--accent);
+            border-radius: 6px;
+            color: var(--accent);
+            font-family: 'Exo 2', sans-serif;
+            font-size: 13px;
+            letter-spacing: 0.15em;
+            text-transform: uppercase;
+            cursor: pointer;
+            opacity: 0.3;
+            pointer-events: none;
+            transition: opacity 0.2s, box-shadow 0.2s;
+        }
+
+        #bigPrestigeBtn.ready { opacity: 1; pointer-events: all; box-shadow: 0 0 20px rgba(255,107,53,0.3); }
+        #bigPrestigeBtn.ready:hover { box-shadow: 0 0 36px rgba(255,107,53,0.6); }
+
+        #floats { position: fixed; top: 0; left: 0; pointer-events: none; }
+
+        .floatText {
+            position: absolute;
+            font-family: 'Share Tech Mono', monospace;
+            font-size: 17px;
+            color: var(--glow);
+            text-shadow: 0 0 8px var(--glow);
+            animation: floatUp 0.9s ease-out forwards;
+        }
+
+        @keyframes floatUp {
+            0%   { opacity: 1; transform: translateY(0); }
+            100% { opacity: 0; transform: translateY(-55px); }
+        }
+
+        .devBtn {
+            width: 64px;
+            height: 32px;
+            background-color: var(--surface);
+            border: 1px solid var(--border);
+        }
+    </style>
+</head>
+<body>
+
+<div id="hud">
+    <h1>Element Clicker</h1>
+    <div class="hudStat">
+        <label>Atomic Points</label>
+        <span id="outPoints">0</span>
+    </div>
+    <div class="hudStat">
+        <label>Per Click</label>
+        <span id="outPerClick">1</span>
+    </div>
+    <div class="hudStat">
+        <label>Per Second</label>
+        <span id="outPerSec">0</span>
+    </div>
+    <div class="hudStat">
+        <label>Prestige Boost</label>
+        <span id="outBoost">×1.0</span>
+    </div>
+    <button id="prestigeBtn">⚛ Prestige</button>
+    <button id="devBtn" class="devBtn">:|</button>
+</div>
+
+<div id="layout">
+    <div id="left">
+        <div id="elementSelector"></div>
+        <div id="elementTile">
+            <span id="tileNumber">1</span>
+            <span id="tileMass">1.008</span>
+            <span id="tileSymbol">H</span>
+            <span id="tileName">Hydrogen</span>
+            <span id="tileMulti">×1</span>
+            <span id="tileCategory">Nonmetal</span>
+        </div>
+        <span id="clickLabel">Click to collect</span>
+    </div>
+
+    <div id="right">
+        <div id="tabs">
+            <button class="tabBtn active" data-tab="upgrades">Upgrades</button>
+            <button class="tabBtn" data-tab="chemists">Chemists</button>
+            <button class="tabBtn" data-tab="elements">Elements</button>
+            <button class="tabBtn" data-tab="prestige">Prestige</button>
+        </div>
+
+        <div class="panel active" id="panel-upgrades">
+            <div class="shopGrid" id="upgradesList"></div>
+        </div>
+        <div class="panel" id="panel-chemists">
+            <div class="shopGrid" id="chemistsList"></div>
+        </div>
+        <div class="panel" id="panel-elements">
+            <div class="shopGrid" id="elementsList"></div>
+        </div>
+        <div class="panel" id="panel-prestige">
+            <div id="prestigePanel"></div>
+        </div>
+    </div>
+</div>
+
+<div id="floats"></div>
+
+<script>
+    // all element, upgrade, and chemist data (ai generated)
+    const ELEMENTS = [
+        { number: 1,  symbol: "H",  name: "Hydrogen",   mass: "1.008",  category: "Nonmetal",        unlockAt: 0 },
+        { number: 2,  symbol: "He", name: "Helium",      mass: "4.003",  category: "Noble Gas",        unlockAt: 500 },
+        { number: 3,  symbol: "Li", name: "Lithium",     mass: "6.941",  category: "Alkali Metal",     unlockAt: 2000 },
+        { number: 6,  symbol: "C",  name: "Carbon",      mass: "12.011", category: "Nonmetal",         unlockAt: 8000 },
+        { number: 8,  symbol: "O",  name: "Oxygen",      mass: "15.999", category: "Nonmetal",         unlockAt: 40000 },
+        { number: 11, symbol: "Na", name: "Sodium",      mass: "22.990", category: "Alkali Metal",     unlockAt: 150000 },
+        { number: 14, symbol: "Si", name: "Silicon",     mass: "28.086", category: "Metalloid",        unlockAt: 500000 },
+        { number: 26, symbol: "Fe", name: "Iron",        mass: "55.845", category: "Transition Metal", unlockAt: 2000000 },
+        { number: 29, symbol: "Cu", name: "Copper",      mass: "63.546", category: "Transition Metal", unlockAt: 8000000 },
+        { number: 79, symbol: "Au", name: "Gold",        mass: "196.97", category: "Transition Metal", unlockAt: 50000000 },
+        { number: 92, symbol: "U",  name: "Uranium",     mass: "238.03", category: "Actinide",         unlockAt: 250000000 },
+        { number: 118, symbol: "Og", name: "Oganesson", mass: "294", category: "Noble Gas", unlockAt: 1_000_000_000 },
+        { number: 120, symbol: "Ubn", name: "Unbinilium", mass: "320", category: "Superheavy", unlockAt: 5_000_000_000 },
+        // below are make-believe
+        { number: 150, symbol: "Xx", name: "Exotium", mass: "400", category: "Synthetic", unlockAt: 2e10 },
+        { number: 200, symbol: "Zr", name: "Zeronium", mass: "500", category: "Exotic", unlockAt: 1e11 },
+        { number: 300, symbol: "Om", name: "Omnium", mass: "800", category: "Cosmic", unlockAt: 5e11 },
+        { number: 500, symbol: "Ae", name: "Aetherium", mass: "1200", category: "Mythic", unlockAt: 2e12 },
+        { number: 1000, symbol: "Dm", name: "Dark Matter", mass: "???", category: "Unknown", unlockAt: 1e13 },
+        { number: 2000, symbol: "Am", name: "Antimatter", mass: "???", category: "Exotic", unlockAt: 5e13 },
+        { number: 5000, symbol: "Sf", name: "Starforge", mass: "∞", category: "Stellar", unlockAt: 2e14 },
+        { number: 10000, symbol: "Qm", name: "Quantum Flux", mass: "∞", category: "Quantum", unlockAt: 1e15 },
+    ];
+
+    const UPGRADES = [
+        { id: "u1", name: "Better Pipette",     desc: "+1 per click",    cost: 50,        bonus: 1 },
+        { id: "u2", name: "Lab Gloves",         desc: "+3 per click",    cost: 250,       bonus: 3 },
+        { id: "u3", name: "Centrifuge",         desc: "+10 per click",   cost: 1500,      bonus: 10 },
+        { id: "u4", name: "Spectrometer",       desc: "+25 per click",   cost: 8000,      bonus: 25 },
+        { id: "u5", name: "Quantum Lens",       desc: "+100 per click",  cost: 50000,     bonus: 100 },
+        { id: "u6", name: "Particle Collider",  desc: "+500 per click",  cost: 500000,    bonus: 500 },
+        { id: "u7", name: "Dark Matter Rig",    desc: "+2000 per click", cost: 5000000,   bonus: 2000 },
+        { id: "u8", name: "Singularity Core",   desc: "+10000 per click",cost: 50000000,  bonus: 10000 },
+        { id: "u9",  name: "Nano Tools",        desc: "+50000 per click",    cost: 2e8,    bonus: 50000 },
+        { id: "u10", name: "Atomic Splitter",   desc: "+200000 per click",   cost: 1e9,    bonus: 200000 },
+        { id: "u11", name: "Fusion Core",       desc: "+1M per click",       cost: 5e9,    bonus: 1_000_000 },
+        { id: "u12", name: "Neutron Driver",    desc: "+5M per click",       cost: 2e10,   bonus: 5_000_000 },
+        { id: "u13", name: "Quantum Extractor", desc: "+25M per click",      cost: 1e11,   bonus: 25_000_000 },
+        { id: "u14", name: "Reality Bender",    desc: "+100M per click",     cost: 5e11,   bonus: 100_000_000 },
+        { id: "u15", name: "Singularity Engine",desc: "+500M per click",     cost: 2e12,   bonus: 500_000_000 },
+        { id: "u16", name: "Multiverse Tap",    desc: "+2B per click",       cost: 1e13,   bonus: 2_000_000_000 },
+    ];
+
+    const CHEMISTS = [
+        { id: "c1", name: "Lab Assistant",  desc: "1 pt/sec base",   cost: 100,    rate: 1 },
+        { id: "c2", name: "Chemist",        desc: "5 pt/sec base",   cost: 500,    rate: 5 },
+        { id: "c3", name: "Professor",      desc: "20 pt/sec base",  cost: 3000,   rate: 20 },
+        { id: "c4", name: "Nobel Laureate", desc: "100 pt/sec base", cost: 20000,  rate: 100 },
+        { id: "c5", name: "Research Team",  desc: "500 pt/sec base", cost: 200000, rate: 500 },
+        { id: "c6",  name: "Quantum Researcher", desc: "2K pt/sec base",   cost: 1e6,   rate: 2000 },
+        { id: "c7",  name: "Fusion Engineer",    desc: "10K pt/sec base",  cost: 5e6,   rate: 10000 },
+        { id: "c8",  name: "Particle AI",        desc: "50K pt/sec base",  cost: 2e7,   rate: 50000 },
+        { id: "c9",  name: "Time Scientist",     desc: "250K pt/sec base", cost: 1e8,   rate: 250000 },
+        { id: "c10", name: "Reality Architect",  desc: "1M pt/sec base",   cost: 5e8,   rate: 1_000_000 },
+        { id: "c11", name: "Dimension Overseer", desc: "5M pt/sec base",   cost: 2e9,   rate: 5_000_000 },
+        { id: "c12", name: "Cosmic Entity",      desc: "25M pt/sec base",  cost: 1e10,  rate: 25_000_000 },
+        { id: "c13", name: "Universal Mind",     desc: "100M pt/sec base", cost: 5e10,  rate: 100_000_000 },
+    ];
+
+    const BASE_PRESTIGE_COST = 1_000_000;
+
+    const prestigeCost = () => BASE_PRESTIGE_COST * Math.pow(2, g.prestigeCount);
+    const SAVE_KEY = "elemClicker_v2";
+
+    // game state to save
+    const freshState = () => ({
+        points:           0,
+        basePerClick:     1,
+        currentEl:        0,
+        unlockedEls:      [0],
+        upgrades:         {},
+        chemists:         {},
+        prestigeCount:    0,
+    });
+
+    // load game save
+    let g = loadState();
+
+    // dev menu (AKA cheats)
+    document.getElementById("devBtn").onclick = function () {
+        g.points += 1000000;
+        renderHUD();
+    };
+
+    // computed getters
+    const prestigeBoost  = () => 1 + g.prestigeCount;
+    const elMultiplier   = () => ELEMENTS[g.currentEl].number;
+    const effectiveClick = () => Math.ceil(g.basePerClick * elMultiplier() * prestigeBoost());
+    const basePerSec     = () => CHEMISTS.reduce((s, c) => s + (g.chemists[c.id] || 0) * c.rate, 0);
+    const effectivePerSec = () => basePerSec() * elMultiplier() * prestigeBoost();
+    const canPrestige = () => g.points >= prestigeCost();
+
+    function fmt(n) {
+        n = Math.floor(n);
+        const units = [ "","K","M","B","T","Qa","Qi","Sx","Sp","Oc","No","Dc"];
+        let tier = 0;
+
+        while (n >= 1000 && tier < units.length - 1) {
+            n /= 1000;
+            tier++;
+        }
+
+        return n.toFixed(tier === 0 ? 0 : 2) + units[tier];
+    }
+
+    function saveState() {
+        localStorage.setItem(SAVE_KEY, JSON.stringify(g));
+    }
+
+    function loadState() {
+        const raw = localStorage.getItem(SAVE_KEY);
+        if (!raw) return freshState();
+        return { ...freshState(), ...JSON.parse(raw) };
+    }
+
+
+    function doPrestige() {
+        if (!canPrestige()) return;
+        const newCount = g.prestigeCount + 1;
+        g = freshState();
+        g.prestigeCount = newCount;
+        saveState();
+        renderAll();
+    }
+
+    function unlockElement(idx) {
+        const el = ELEMENTS[idx];
+        if (g.points < el.unlockAt) return;
+        if (g.unlockedEls.includes(idx)) return;
+        g.points -= el.unlockAt;
+        g.unlockedEls.push(idx);
+        g.currentEl = idx;
+        saveState();
+        renderAll();
+    }
+
+    function switchElement(idx) {
+        if (!g.unlockedEls.includes(idx)) return;
+        g.currentEl = idx;
+        saveState();
+        renderAll();
+    }
+
+    function buyUpgrade(u) {
+        if (g.points < u.cost || g.upgrades[u.id]) return;
+        g.points -= u.cost;
+        g.upgrades[u.id] = true;
+        g.basePerClick += u.bonus;
+        saveState();
+        renderAll();
+    }
+
+    function buyChemist(c) {
+        const owned = g.chemists[c.id] || 0;
+        const cost  = Math.floor(c.cost * Math.pow(1.15, owned));
+        if (g.points < cost) return;
+        g.points -= cost;
+        g.chemists[c.id] = owned + 1;
+        saveState();
+        renderAll();
+    }
+
+    function handleClick(e) {
+        const gain = effectiveClick();
+        g.points += gain;
+        spawnFloat(e.clientX - 10, e.clientY - 20, "+" + fmt(gain));
+        saveState();
+        renderAll();
+    }
+
+    function spawnFloat(x, y, text) {
+        const el = document.createElement("div");
+        el.className = "floatText";
+        el.textContent = text;
+        el.style.left = x + "px";
+        el.style.top  = y + "px";
+        document.getElementById("floats").appendChild(el);
+        setTimeout(() => el.remove(), 900);
+    }
+
+    function renderTile() {
+        const el = ELEMENTS[g.currentEl];
+        document.getElementById("tileNumber").textContent   = el.number;
+        document.getElementById("tileMass").textContent     = el.mass;
+        document.getElementById("tileSymbol").textContent   = el.symbol;
+        document.getElementById("tileName").textContent     = el.name;
+        document.getElementById("tileCategory").textContent = el.category;
+        document.getElementById("tileMulti").textContent    = "×" + el.number;
+    }
+
+    function renderSelector() {
+        const container = document.getElementById("elementSelector");
+        container.innerHTML = "";
+
+        // sort unlocked elements by atomic number
+        const sorted = [...g.unlockedEls].sort(
+            (a, b) => ELEMENTS[a].number - ELEMENTS[b].number
+        );
+
+        sorted.forEach(idx => {
+            const btn = document.createElement("button");
+            btn.className = "elBtn" + (idx === g.currentEl ? " active" : "");
+            btn.textContent = ELEMENTS[idx].symbol;
+            btn.addEventListener("click", () => switchElement(idx));
+            container.appendChild(btn);
+        });
+    }
+
+    function renderHUD() {
+        document.getElementById("outPoints").textContent   = fmt(g.points);
+        document.getElementById("outPerClick").textContent = fmt(effectiveClick());
+        document.getElementById("outPerSec").textContent   = fmt(effectivePerSec());
+        document.getElementById("outBoost").textContent    = "×" + prestigeBoost().toFixed(1);
+
+        const btn = document.getElementById("prestigeBtn");
+        btn.classList.toggle("ready", canPrestige());
+    }
+
+    function renderUpgrades() {
+        const list = document.getElementById("upgradesList");
+        list.innerHTML = "";
+        UPGRADES.forEach(u => {
+            if (g.upgrades[u.id]) return; // hide bought
+            const div = document.createElement("div");
+            div.className = "shopItem" + (g.points < u.cost ? " locked" : "");
+            div.innerHTML = `
+                <div class="itemInfo">
+                    <span class="itemName">${u.name}</span>
+                    <span class="itemDesc">${u.desc}</span>
+                </div>
+                <div class="itemRight">
+                    <span class="itemCost">${fmt(prestigeCost())} AP</span>
+                </div>`;
+            div.addEventListener("click", () => buyUpgrade(u));
+            list.appendChild(div);
+        });
+    }
+
+    function renderChemists() {
+        const list = document.getElementById("chemistsList");
+        list.innerHTML = "";
+        CHEMISTS.forEach(c => {
+            const owned = g.chemists[c.id] || 0;
+            const cost  = Math.floor(c.cost * Math.pow(1.15, owned));
+            const div   = document.createElement("div");
+            div.className = "shopItem" + (g.points < cost ? " locked" : "") + (owned > 0 ? " owned" : "");
+            div.innerHTML = `
+                <div class="itemInfo">
+                    <span class="itemName">${c.name}</span>
+                    <span class="itemDesc">${c.desc}</span>
+                </div>
+                <div class="itemRight">
+                    <span class="itemCost">${fmt(cost)} AP</span>
+                    <span class="itemOwned">owned: ${owned}</span>
+                </div>`;
+            div.addEventListener("click", () => buyChemist(c));
+            list.appendChild(div);
+        });
+    }
+
+    function renderElements() {
+        const list = document.getElementById("elementsList");
+        list.innerHTML = "";
+
+        const unlocked = document.createElement("div");
+        unlocked.className = "sectionLabel";
+        unlocked.textContent = "Unlocked";
+        list.appendChild(unlocked);
+
+        ELEMENTS.forEach((el, idx) => {
+            if (!g.unlockedEls.includes(idx)) return;
+            const isActive = idx === g.currentEl;
+            const div = document.createElement("div");
+            div.className = "shopItem" + (isActive ? " owned" : "");
+            div.innerHTML = `
+                <div class="itemInfo">
+                    <span class="itemName">${el.symbol} — ${el.name}</span>
+                    <span class="itemDesc">×${el.number} multiplier · ${el.category}</span>
+                </div>
+                <div class="itemRight">
+                    <span class="itemOwned">${isActive ? "Active" : "Switch"}</span>
+                </div>`;
+            div.addEventListener("click", () => { switchElement(idx); });
+            list.appendChild(div);
+        });
+
+        const locked = document.createElement("div");
+        locked.className = "sectionLabel";
+        locked.style.marginTop = "0.75rem";
+        locked.textContent = "Available to Unlock";
+        list.appendChild(locked);
+
+        let anyLocked = false;
+        ELEMENTS.forEach((el, idx) => {
+            if (g.unlockedEls.includes(idx)) return;
+            anyLocked = true;
+            const div = document.createElement("div");
+            div.className = "shopItem" + (g.points < el.unlockAt ? " locked" : "");
+            div.innerHTML = `
+                <div class="itemInfo">
+                    <span class="itemName">${el.symbol} — ${el.name}</span>
+                    <span class="itemDesc">×${el.number} multiplier · ${el.category}</span>
+                </div>
+                <div class="itemRight">
+                    <span class="itemCost">${fmt(el.unlockAt)} AP</span>
+                </div>`;
+            div.addEventListener("click", () => unlockElement(idx));
+            list.appendChild(div);
+        });
+
+        if (!anyLocked) {
+            const msg = document.createElement("div");
+            msg.style.cssText = "color:var(--muted);font-size:12px;padding:0.5rem 0;";
+            msg.textContent = "All elements unlocked!";
+            list.appendChild(msg);
+        }
+    }
+
+    function renderPrestige() {
+        const panel = document.getElementById("prestigePanel");
+        panel.innerHTML = "";
+
+        const stats = document.createElement("div");
+        stats.className = "prestigeStat";
+        stats.innerHTML = `
+            <strong>${g.prestigeCount} Prestige${g.prestigeCount !== 1 ? "s" : ""}</strong>
+            <p>
+                Current boost: <b style="color:var(--accent)">×${prestigeBoost().toFixed(1)}</b><br>
+                Next boost: <b style="color:var(--accent)">×${(1 + (g.prestigeCount + 1) * 1).toFixed(1)}</b><br><br>
+                Prestige resets your points, upgrades, and chemists, but keeps unlocked elements and compounds your global multiplier by +50% each time.
+            </p>`;
+        panel.appendChild(stats);
+
+        const costNote = document.createElement("div");
+        costNote.className = "prestigeStat";
+        costNote.innerHTML = `
+            <p>
+                Requires <b style="color:var(--glow)">${fmt(prestigeCost())} AP</b> to prestige.<br>
+                You currently have <b style="color:var(--glow)">${fmt(g.points)} AP</b>.
+            </p>`;
+        panel.appendChild(costNote);
+
+        const btn = document.createElement("button");
+        btn.id = "bigPrestigeBtn";
+        btn.className = canPrestige() ? "ready" : "";
+        btn.textContent = "⚛ Prestige Now";
+        btn.addEventListener("click", doPrestige);
+        panel.appendChild(btn);
+    }
+
+    function renderAll() {
+        renderHUD();
+        renderTile();
+        renderSelector();
+        renderUpgrades();
+        renderChemists();
+        renderElements();
+        renderPrestige();
+    }
+
+    document.getElementById("elementTile").addEventListener("click", handleClick);
+    document.getElementById("prestigeBtn").addEventListener("click", doPrestige);
+
+    document.querySelectorAll(".tabBtn").forEach(btn => {
+        btn.addEventListener("click", () => {
+            document.querySelectorAll(".tabBtn").forEach(b => b.classList.remove("active"));
+            document.querySelectorAll(".panel").forEach(p => p.classList.remove("active"));
+            btn.classList.add("active");
+            document.getElementById("panel-" + btn.dataset.tab).classList.add("active");
+        });
+    });
+
+    // passive income tick (50ms = 20x/sec)
+    setInterval(() => {
+        const ps = effectivePerSec();
+        if (ps <= 0) return;
+        g.points += ps / 20;
+        renderHUD();
+    }, 50);
+
+    // autosave every 10s
+    setInterval(saveState, 10000);
+
+    renderAll();
+</script>
+</body>
+</html>
+
+<!-- 813 lines jeez -->
